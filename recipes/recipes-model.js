@@ -3,15 +3,32 @@ const db = require("../data/db-config.js");
 module.exports = {
   find,
   findById,
-  findIngredients,
+  findIngredientsById,
   findDirections,
   add,
-  update,
-  remove
+  remove,
+  findAllIngredients,
+  findRecipesByIngredientId
 };
 
 function find() {
   return db("recipes");
+}
+
+function findAllIngredients() {
+  return db("ingredients");
+}
+
+function findRecipesByIngredientId(id) {
+  /*SELECT r.name
+FROM recipes_ingredients as ri
+JOIN recipes as r ON r.id = ri.recipe_id
+WHERE ri.ingredient_id = 2*/
+
+  return db("recipes_ingredients as ri")
+    .select("r.name")
+    .join("recipes as r", "r.id", "ri.recipe_id")
+    .where("ri.ingredient_id", id);
 }
 
 function findById(id) {
@@ -20,6 +37,11 @@ function findById(id) {
     .first();
 }
 
+function findIngredientsById(id) {
+  return db("ingredients")
+    .where({ id })
+    .first();
+}
 function findIngredients(id) {
   console.log(id);
   //   SELECT i.measurement, i.name
@@ -42,22 +64,10 @@ function findDirections(id) {
     .where("recipe_id", id);
 }
 
-function add(scheme) {
+function add(recipe) {
   return db("recipes")
-    .insert(scheme, "id")
+    .insert(recipe, "id")
     .then(([id]) => {
-      return findById(id);
-    });
-}
-
-function update(changes, id) {
-  console.log(changes);
-  changedObject = { id: id, ...changes };
-  console.log(changedObject);
-  return db("recipes")
-    .update("scheme_name", changes.scheme_name)
-    .where({ id })
-    .then(count => {
       return findById(id);
     });
 }
